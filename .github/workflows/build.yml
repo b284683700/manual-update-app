@@ -2,12 +2,8 @@ name: Build Manual Update App APK
 'on':
   push:
     branches: [main, master]
-    paths:
-      - 'manual-update-app-rn/**'
   pull_request:
     branches: [main, master]
-    paths:
-      - 'manual-update-app-rn/**'
 
 jobs:
   build:
@@ -23,10 +19,8 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: manual-update-app-rn/package-lock.json
           
       - name: 📦 Install dependencies
-        working-directory: manual-update-app-rn
         run: npm ci
           
       - name: 🔧 Setup Expo and EAS
@@ -37,11 +31,10 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
           
       - name: 🏗 Build APK
-        working-directory: manual-update-app-rn
         run: eas build --platform android --profile production --non-interactive
         
       - name: 📤 Upload APK artifact
         uses: actions/upload-artifact@v3
         with:
           name: manual-update-app.apk
-          path: manual-update-app-rn/build/*.apk
+          path: build/*.apk
