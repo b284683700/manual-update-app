@@ -54,15 +54,31 @@ jobs:
           echo "MYAPP_RELEASE_STORE_PASSWORD=android" >> android/gradle.properties
           echo "MYAPP_RELEASE_KEY_PASSWORD=android" >> android/gradle.properties
       
-      - name: 📝 Modify build.gradle
+      - name: 📝 Modify build.gradle for signing
         run: |
-          sed -i '/signingConfigs {/,/}/d' android/app/build.gradle
-          sed -i '/android {/a\    signingConfigs {\n        release {\n            if (project.hasProperty("MYAPP_RELEASE_STORE_FILE")) {\n                storeFile file(MYAPP_RELEASE_STORE_FILE)\n                storePassword MYAPP_RELEASE_STORE_PASSWORD\n                keyAlias MYAPP_RELEASE_KEY_ALIAS\n                keyPassword MYAPP_RELEASE_KEY_PASSWORD\n            }\n        }\n    }' android/app/build.gradle
-          sed -i 's/buildTypes {/buildTypes {\n        release {\n            signingConfig signingConfigs.release\n        }/' android/app/build.gradle
+          cat > /tmp/signing_config.txt << 'EOF'
+              signingConfigs {
+                  release {
+                      if (project.hasProperty('MYAPP_RELEASE_STORE_FILE')) {
+                          storeFile file(MYAPP_RELEASE_STORE_FILE)
+                          storePassword MYAPP_RELEASE_STORE_PASSWORD
+                          keyAlias MYAPP_RELEASE_KEY_ALIAS
+                          keyPassword MYAPP_RELEASE_KEY_PASSWORD
+                      }
+                  }
+              }
+          EOF
+          
+          # 在android {后面插入签名配置
+          sed -i '/android {/r /tmp/signing_config.txt' android/app/build.gradle
+          
+          # 修改release buildType使用签名配置
+          sed -i '/release {/,/}/c\        release {\n            signingConfig signingConfigs.release\n            minifyEnabled enableProguardInReleaseBuilds\n            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"\n        }' android/app/build.gradle
       
       - name: 🔨 Build APK
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleRelease
       
       - name: 📤 Upload APK
