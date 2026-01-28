@@ -1,5 +1,4 @@
 const { getDefaultConfig } = require('expo/metro-config');
-const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
@@ -8,7 +7,8 @@ config.resolver = {
   ...config.resolver,
   // 为 React Native 环境提供空的 polyfill
   extraNodeModules: {
-    crypto: require.resolve('expo-crypto'),
+    assert: require.resolve('assert/'),
+    crypto: require.resolve('react-native-quick-crypto'),
     stream: require.resolve('readable-stream'),
     http: require.resolve('stream-http'),
     https: require.resolve('https-browserify'),
