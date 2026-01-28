@@ -56,8 +56,25 @@ jobs:
       
       - name: 📝 Modify build.gradle for signing
         run: |
-          cat > /tmp/signing_config.txt << 'EOF'
+          # 备份原文件
+          cp android/app/build.gradle android/app/build.gradle.bak
+          
+          # 使用 Python 脚本来修改 build.gradle
+          python3 << 'PYTHON_SCRIPT'
+          import re
+          
+          with open('android/app/build.gradle', 'r') as f:
+              content = f.read()
+          
+          # 1. 在 android { 后添加 signingConfigs
+          signing_config = '''
               signingConfigs {
+                  debug {
+                      storeFile file('debug.keystore')
+                      storePassword 'android'
+                      keyAlias 'androiddebugkey'
+                      keyPassword 'android'
+                  }
                   release {
                       if (project.hasProperty('MYAPP_RELEASE_STORE_FILE')) {
                           storeFile file(MYAPP_RELEASE_STORE_FILE)
@@ -67,13 +84,51 @@ jobs:
                       }
                   }
               }
-          EOF
+          '''
           
-          # 在android {后面插入签名配置
-          sed -i '/android {/r /tmp/signing_config.txt' android/app/build.gradle
+          # 查找 android { 并在其后插入 signingConfigs
+          if 'signingConfigs' not in content:
+              content = re.sub(
+                  r'(android\s*\{)',
+                  r'\1' + signing_config,
+                  content,
+                  count=1
+              )
           
-          # 修改release buildType使用签名配置
-          sed -i '/release {/,/}/c\        release {\n            signingConfig signingConfigs.release\n            minifyEnabled enableProguardInReleaseBuilds\n            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"\n        }' android/app/build.gradle
+          # 2. 修改 buildTypes 中的 release 配置
+          # 查找 buildTypes 块
+          buildtypes_pattern = r'(buildTypes\s*\{[^}]*)(release\s*\{[^}]*\})'
+          
+          def replace_release(match):
+              before = match.group(1)
+              release_block = '''release {
+                  signingConfig signingConfigs.release
+                  minifyEnabled enableProguardInReleaseBuilds
+                  proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+              }'''
+              return before + release_block
+          
+          content = re.sub(buildtypes_pattern, replace_release, content, flags=re.DOTALL)
+          
+          # 3. 确保 debug 配置也存在
+          if 'buildTypes' in content and 'debug {' not in content:
+              content = re.sub(
+                  r'(buildTypes\s*\{)',
+                  r'\1\n        debug {\n            signingConfig signingConfigs.debug\n        }',
+                  content,
+                  count=1
+              )
+          
+          with open('android/app/build.gradle', 'w') as f:
+              f.write(content)
+          
+          print("✅ build.gradle 修改完成")
+          PYTHON_SCRIPT
+          
+          # 显示修改后的关键部分
+          echo "=== 修改后的 signingConfigs 和 buildTypes ==="
+          sed -n '/signingConfigs/,/^    }/p' android/app/build.gradle
+          sed -n '/buildTypes/,/^    }/p' android/app/build.gradle
       
       - name: 🔨 Build APK
         run: |
