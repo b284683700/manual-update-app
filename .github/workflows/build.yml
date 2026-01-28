@@ -49,10 +49,27 @@ jobs:
       
       - name: ⚙️ Configure signing
         run: |
-          echo "MYAPP_RELEASE_STORE_FILE=release.keystore" >> android/gradle.properties
-          echo "MYAPP_RELEASE_KEY_ALIAS=release" >> android/gradle.properties
-          echo "MYAPP_RELEASE_STORE_PASSWORD=android" >> android/gradle.properties
-          echo "MYAPP_RELEASE_KEY_PASSWORD=android" >> android/gradle.properties
+          # 确保 gradle.properties 文件存在并以换行符结尾
+          if [ ! -f android/gradle.properties ]; then
+            touch android/gradle.properties
+          fi
+          
+          # 确保文件以换行符结尾
+          [ -n "$(tail -c1 android/gradle.properties)" ] && echo "" >> android/gradle.properties
+          
+          # 添加签名配置
+          cat >> android/gradle.properties << 'EOF'
+          
+          # Release signing config
+          MYAPP_RELEASE_STORE_FILE=release.keystore
+          MYAPP_RELEASE_KEY_ALIAS=release
+          MYAPP_RELEASE_STORE_PASSWORD=android
+          MYAPP_RELEASE_KEY_PASSWORD=android
+          EOF
+          
+          # 显示配置内容
+          echo "=== gradle.properties 内容 ==="
+          cat android/gradle.properties
       
       - name: 📝 Modify build.gradle for signing
         run: |
