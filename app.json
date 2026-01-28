@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "手动上报",
+    "slug": "manual-update-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#667eea"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.manualupdate.app"
+    },
+    "android": {
+      "package": "com.manualupdate.app",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "ACCESS_WIFI_STATE"
+      ],
+      "usesCleartextTraffic": true,
+      "adaptiveIcon": {
+        "backgroundColor": "#667eea"
+      }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 33,
+            "targetSdkVersion": 33,
+            "buildToolsVersion": "33.0.0",
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ]
+  }
+}
