@@ -1,4 +1,5 @@
 const { getDefaultConfig } = require('expo/metro-config');
+const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
@@ -11,10 +12,15 @@ config.resolver = {
     stream: require.resolve('readable-stream'),
     http: require.resolve('stream-http'),
     https: require.resolve('https-browserify'),
+    http2: require.resolve('./polyfills/http2.js'),
     os: require.resolve('os-browserify/browser'),
     url: require.resolve('url/'),
     zlib: require.resolve('browserify-zlib'),
     path: require.resolve('path-browserify'),
+    util: require.resolve('util/'),
+    'follow-redirects': require.resolve('./polyfills/follow-redirects.js'),
+    'form-data': require.resolve('./polyfills/form-data.js'),
+    'proxy-from-env': require.resolve('./polyfills/proxy-from-env.js'),
   },
   // 确保 axios 使用浏览器版本
   resolverMainFields: ['react-native', 'browser', 'main'],
