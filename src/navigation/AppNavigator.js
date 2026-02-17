@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import COLORS from '../theme/colors';
 
 import UpdateScreen from '../screens/UpdateScreen';
+import SellScreen from '../screens/SellScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
@@ -17,6 +18,8 @@ export default function AppNavigator() {
 
           if (route.name === 'Update') {
             iconName = focused ? 'cloud-upload' : 'cloud-upload-outline';
+          } else if (route.name === 'Sell') {
+            iconName = focused ? 'cart' : 'cart-outline';
           } else if (route.name === 'Settings') {
             iconName = focused ? 'settings' : 'settings-outline';
           }
@@ -45,6 +48,13 @@ export default function AppNavigator() {
         component={UpdateScreen}
         options={{
           tabBarLabel: '更新',
+        }}
+      />
+      <Tab.Screen
+        name="Sell"
+        component={SellScreen}
+        options={{
+          tabBarLabel: '出售',
         }}
       />
       <Tab.Screen
